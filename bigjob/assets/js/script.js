@@ -33,12 +33,13 @@ function login(email, password) {
     return { success: false, message: "Identifiants incorrects" };
 }
 
-//Verfifie la session
-// Récupération de l'utilisateur connecté
+// Vérifie la session uniquement pour calendrier.html
 const user = JSON.parse(sessionStorage.getItem("currentUser"));
-// Protection d'une page
-if (!user) {
-    window.location.href = "login.html";
+if (
+    window.location.pathname.endsWith("/calendrier.html") &&
+    !user
+) {
+    window.location.href = "connexion.html";
 }
 
 //Charge le fichier .json
