@@ -28,8 +28,8 @@
                     </svg>
                 </button>
                 <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-                    <ul
-                        class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary">
+                    <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary"
+                        id="navbar-links">
                         <li>
                             <a href="index.html"
                                 class="block py-2 px-3 text-white bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0"
@@ -47,6 +47,10 @@
                             <a href="calendrier.html"
                                 class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Calendrier</a>
                         </li>
+                        <li id="logout-li" style="display:none">
+                            <button id="logout-btn"
+                                class="block py-2 px-3 bg-cyan-500 text-white rounded hover:bg-cyan-700 font-bold transition-all duration-200">Déconnexion</button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -58,9 +62,9 @@
 
     <div id="calendrier-container" class="w-full flex flex-col items-center justify-center mt-32">
         <div id="calendrier"
-            class="bg-gradient-to-br from-indigo-200 via-white to-pink-100 rounded-3xl shadow-2xl p-10 w-full max-w-3xl flex flex-col items-center border-4 border-indigo-300 calendrier-custom">
-            <h2 id="titre-calendrier"
-                class="text-4xl font-extrabold mb-8 text-indigo-700 tracking-wide calendrier-mois"></h2>
+            class="bg-gradient-to-br from-cyan-200 via-white to-cyan-100 rounded-3xl shadow-2xl p-10 w-full max-w-3xl flex flex-col items-center border-4 border-cyan-300 calendrier-custom">
+            <h2 id="titre-calendrier" class="text-4xl font-extrabold mb-8 text-cyan-700 tracking-wide calendrier-mois">
+            </h2>
             <div id="jours" class="grid grid-cols-7 gap-4 w-full calendrier-jours"></div>
         </div>
     </div>

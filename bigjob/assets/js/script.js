@@ -216,3 +216,19 @@ function getDemandes() {
 function setDemandes(demandes) {
     localStorage.setItem("demandes", JSON.stringify(demandes));
 }
+
+//Bouton de déconnexion sur la navbar
+document.addEventListener('DOMContentLoaded', function () {
+    const user = sessionStorage.getItem('currentUser');
+    const logoutLi = document.getElementById('logout-li');
+    if (user && logoutLi) {
+        logoutLi.style.display = '';
+    }
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'connexion.html';
+        });
+    }
+});

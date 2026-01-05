@@ -30,8 +30,8 @@
                     </svg>
                 </button>
                 <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-                    <ul
-                        class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary">
+                    <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary"
+                        id="navbar-links">
                         <li>
                             <a href="index.html"
                                 class="block py-2 px-3 text-white bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0"
@@ -48,6 +48,10 @@
                         <li>
                             <a href="calendrier.html"
                                 class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Calendrier</a>
+                        </li>
+                        <li id="logout-li" style="display:none">
+                            <button id="logout-btn"
+                                class="block py-2 px-3 bg-cyan-500 text-white rounded hover:bg-cyan-700 font-bold transition-all duration-200">Déconnexion</button>
                         </li>
                     </ul>
                 </div>
@@ -83,7 +87,7 @@
                     <i class="fas fa-lock absolute right-3 top-3 text-cyan-400"></i>
                 </div>
                 <button type="submit"
-                    class="w-full bg-gradient-to-r from-sky-500 to-sky-900 text-white font-bold py-3 rounded-lg hover:from-sky-600 hover:to-sky-950 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                    class="w-full bg-gradient-to-r from-cyan-300 to-cyan-500 text-white font-bold py-3 rounded-lg hover:from-cyan-500 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
                     S'inscrire
                 </button>
             </form>

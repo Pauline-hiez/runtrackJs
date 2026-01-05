@@ -1,3 +1,10 @@
+/* Navbar */
+.navbar-shadow,
+nav.bg-neutral-primary {
+    box-shadow: 0 4px 18px 0 rgba(23, 69, 110, 0.18), 0 1.5px 8px 0 rgba(23, 69, 110, 0.08);
+    z-index: 30;
+}
+
 /* Formulaires */
 @keyframes neon-pulse {
 
@@ -52,7 +59,7 @@
 }
 
 .bg-animate {
-    background: linear-gradient(-45deg, #66ee8c, #8ed4e9, #23a6d5, #23d5ab);
+    background: linear-gradient(-45deg, #9ac0d0, #9bd3e4, #70bfdc, #aed5e8);
     background-size: 400% 400%;
     animation: bg-shift 15s ease infinite;
 }
@@ -73,7 +80,7 @@
 
 .calendrier-mois {
     letter-spacing: 0.08em;
-    text-shadow: 0 2px 8px #818cf8, 0 1px 0 #fff;
+    text-shadow: 0 1px 2px #17456e, 0 1px 0 #fff;
 }
 
 .calendrier-jours button {
@@ -82,5 +89,5 @@
 
 .calendrier-jours button:hover:not(:disabled) {
     transform: scale(1.08) translateY(-2px);
-    box-shadow: 0 4px 16px 0 #818cf8aa;
+    box-shadow: 0 4px 16px 0 #17456e;
 }
