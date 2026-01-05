@@ -60,7 +60,7 @@
     <div class="bg-animate min-h-screen flex items-center justify-center p-4">
         <div
             class="bg-black bg-opacity-80 p-8 rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500 max-w-md w-full">
-            <h1 class="text-4xl font-extrabold text-center mb-8 neon-text">Connexion</h1>
+            <h1 class="text-4xl font-extrabold text-center mb-8 neon-text">Inscription</h1>
             <form class="space-y-6">
                 <div class="relative">
                     <input type="name" placeholder="Username"
@@ -100,6 +100,32 @@
 
 
     <script src="assets/js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    const inputs = form.querySelectorAll("input");
+                    const nom = inputs[0].value;
+                    const email = inputs[1].value;
+                    const password = inputs[2].value;
+                    const confirm = inputs[3] ? inputs[3].value : password;
+                    if (password !== confirm) {
+                        alert("Les mots de passe ne correspondent pas.");
+                        return;
+                    }
+                    const result = register(email, password, nom, "");
+                    if (result.success) {
+                        alert("Inscription réussie ! Vous pouvez vous connecter.");
+                        window.location.href = "connexion.html";
+                    } else {
+                        alert(result.message);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
