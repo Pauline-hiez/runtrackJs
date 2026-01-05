@@ -1,3 +1,6 @@
+// Récupère l'utilisateur courant une seule fois
+const user = JSON.parse(sessionStorage.getItem("currentUser"));
+
 //Inscription
 function register(email, password, nom, prenom) {
     // Validation de l'email
@@ -79,7 +82,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Vérifie la session uniquement pour calendrier.html
-const user = JSON.parse(sessionStorage.getItem("currentUser"));
 if (
     window.location.pathname.endsWith("/calendrier.html") &&
     !user
@@ -169,7 +171,7 @@ function afficherCalendrierBeau() {
         const demandes = getDemandes();
         const demande = demandes.find(d => d.userId === user.id && d.date === dateStr);
         if (demande) {
-            btn.textContent += demande.statut === "acceptee" ? " ✅" : demande.statut === "refusee" ? " ❌" : " ⏳";
+            btn.textContent += demande.statut === "acceptée" ? " ✅" : demande.statut === "refusée" ? " ❌" : " ⏳";
             btn.className += " bg-cyan-400/80 text-white cursor-not-allowed opacity-70 border-2 border-cyan-600";
             btn.disabled = true;
         } else {
@@ -206,7 +208,7 @@ function demanderAutorisation(dateStr) {
     demandes.push({ userId: user.id, date: dateStr, statut: "en_attente" });
     setDemandes(demandes);
     alert("Demande envoyée pour le " + dateStr);
-    afficherCalendrier();
+    afficherCalendrierBeau();
 }
 
 function getDemandes() {
@@ -230,5 +232,121 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionStorage.removeItem('currentUser');
             window.location.href = 'connexion.html';
         });
+    }
+});
+
+// Vérifie si l'utilisateur est modérateur uniquement sur backoffice.html
+if (window.location.pathname.endsWith("/backoffice.html")) {
+    if (!user || user.role !== "moderateur") {
+        window.location.href = "connexion.html";
+    }
+}
+
+// Affiche les demandes en attente
+function afficherDemandes() {
+    const container = document.getElementById("demandes-list");
+    if (!container) return; // Ne fait rien si l'élément n'existe pas
+    const demandes = JSON.parse(localStorage.getItem("demandes") || "[]");
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    container.innerHTML = "";
+    if (demandes.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-500">Aucune demande.</div>';
+        return;
+    }
+    demandes.forEach((d, idx) => {
+        const demandeur = users.find(u => u.id === d.userId);
+        const nom = demandeur ? (demandeur.nom + ' ' + demandeur.prenom) : 'Utilisateur inconnu';
+        let statutColor = d.statut === 'acceptée' ? 'text-green-600' : d.statut === 'refusée' ? 'text-red-600' : 'text-yellow-600';
+        let actions = '';
+        // On ne peut plus changer la décision si la date est passée
+        const dateJour = new Date(d.date + "T23:59:59");
+        const maintenant = new Date();
+        if (d.statut === 'en_attente' && dateJour >= maintenant) {
+            actions = `
+                    <button class="accept-btn bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded mr-2" data-idx="${idx}">Accepter</button>
+                    <button class="refuse-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-idx="${idx}">Refuser</button>
+                `;
+        }
+        container.innerHTML += `
+                <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
+                    <div>
+                        <div class="font-bold text-cyan-700">${nom}</div>
+                        <div class="text-sm text-gray-500">${d.date}</div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-2 md:mt-0">
+                        <span class="font-semibold ${statutColor}">${d.statut}</span>
+                        ${actions}
+                    </div>
+                </div>
+            `;
+    });
+
+    // Ajoute les listeners pour accepter/refuser
+    document.querySelectorAll('.accept-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const idx = this.getAttribute('data-idx');
+            changerStatutDemande(idx, 'acceptée');
+        });
+    });
+    document.querySelectorAll('.refuse-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const idx = this.getAttribute('data-idx');
+            changerStatutDemande(idx, 'refusée');
+        });
+    });
+}
+
+function changerStatutDemande(idx, statut) {
+    const demandes = JSON.parse(localStorage.getItem("demandes") || "[]");
+    demandes[idx].statut = statut;
+    localStorage.setItem("demandes", JSON.stringify(demandes));
+    afficherDemandes();
+}
+
+afficherDemandes(); // Sans effet sur les pages sans 'demandes-list'
+
+// Affiche le lien backoffice si modérateur sur toutes les pages
+document.addEventListener("DOMContentLoaded", function () {
+    const user = JSON.parse(sessionStorage.getItem('currentUser'));
+    if (user && user.role === 'moderateur') {
+        const backofficeLi = document.getElementById('backoffice-li');
+        if (backofficeLi) backofficeLi.style.display = '';
+    }
+});
+
+// Gestion du formulaire d'inscription sur inscription.html
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.endsWith("/inscription.html")) {
+        const form = document.querySelector("form");
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const inputs = form.querySelectorAll("input");
+                const nom = inputs[0].value;
+                const email = inputs[1].value;
+                const password = inputs[2].value;
+                const confirm = inputs[3] ? inputs[3].value : password;
+                if (password !== confirm) {
+                    alert("Les mots de passe ne correspondent pas.");
+                    return;
+                }
+                const result = register(email, password, nom, "");
+                if (result.success) {
+                    alert("Inscription réussie ! Vous pouvez vous connecter.");
+                    window.location.href = "connexion.html";
+                } else {
+                    alert(result.message);
+                }
+            });
+        }
+    }
+});
+
+// Affiche le lien backoffice si modérateur sur toutes les pages
+document.addEventListener("DOMContentLoaded", function () {
+    const user = JSON.parse(sessionStorage.getItem('currentUser'));
+    if (user && user.role === 'moderateur') {
+        const backofficeLi = document.getElementById('backoffice-li');
+        if (backofficeLi) backofficeLi.style.display = '';
     }
 });

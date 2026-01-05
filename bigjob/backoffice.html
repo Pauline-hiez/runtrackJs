@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice - Modérateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/style/style.css">
+</head>
+
+<body class="bg-gradient-to-br from-cyan-200 via-white to-blue-200 min-h-screen">
+    <header>
+        <nav class="bg-neutral-primary fixed w-full z-20 top-0 start-0 border-b border-default">
+            <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+                <a href="https://laplateforme.io/" class="flex items-center space-x-3 rtl:space-x-reverse">
+                    <img src="assets/img/logo-laplateforme-2024.png" class="h-7" alt="Flowbite Logo" />
+                </a>
+                <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+                    <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary"
+                        id="navbar-links">
+                        <li><a href="index.html"
+                                class="block py-2 px-3 text-white bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0"
+                                aria-current="page">Accueil</a></li>
+                        <li><a href="calendrier.html"
+                                class="block py-2 px-3 text-heading rounded hover:bg-neutral-tertiary md:hover:bg-transparent md:border-0 md:hover:text-fg-brand md:p-0 md:dark:hover:bg-transparent">Calendrier</a>
+                        </li>
+                        <li id="logout-li" style="display:none">
+                            <button id="logout-btn"
+                                class="block py-2 px-3 bg-cyan-500 text-white rounded hover:bg-cyan-700 font-bold transition-all duration-200">Déconnexion</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="pt-32 max-w-3xl mx-auto">
+        <h1 class="text-4xl font-extrabold text-center mb-8 neon-text">Gestion des demandes de présence</h1>
+        <div id="demandes-list" class="space-y-4"></div>
+    </main>
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>
