@@ -425,15 +425,22 @@ function afficherDemandes() {
         const maintenant = new Date();
         if (d.statut === 'en_attente' && dateJour >= maintenant) {
             actions = `
-                    <button class="accept-btn bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded mr-2" data-idx="${idx}">Accepter</button>
-                    <button class="refuse-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-idx="${idx}">Refuser</button>
+                    <button class="accept-btn bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded mr-2" data-userid="${d.userId}" data-date="${d.date}">Accepter</button>
+                    <button class="refuse-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-userid="${d.userId}" data-date="${d.date}">Refuser</button>
                 `;
         }
         container.innerHTML += `
                 <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
                     <div>
                         <div class="font-bold text-cyan-700">${nom}</div>
-                        <div class="text-sm text-gray-500">${d.date}</div>
+                        <div class="text-sm text-gray-500">${(() => {
+                const parts = d.date.split('-');
+                if (parts.length === 3) {
+                    return parts[2] + '/' + parts[1] + '/' + parts[0];
+                } else {
+                    return d.date;
+                }
+            })()}</div>
                     </div>
                     <div class="flex items-center gap-4 mt-2 md:mt-0">
                         <span class="font-semibold ${statutColor}">${statutAffiche}</span>
@@ -448,24 +455,43 @@ function afficherDemandes() {
     if (currentUser && (currentUser.role === 'moderateur' || currentUser.role === 'admin')) {
         document.querySelectorAll('.accept-btn').forEach(btn => {
             btn.addEventListener('click', function () {
-                const idx = this.getAttribute('data-idx');
-                changerStatutDemande(idx, 'acceptée');
+                const userId = this.getAttribute('data-userid');
+                const date = this.getAttribute('data-date');
+                changerStatutDemande(userId, date, 'acceptée');
             });
         });
         document.querySelectorAll('.refuse-btn').forEach(btn => {
             btn.addEventListener('click', function () {
-                const idx = this.getAttribute('data-idx');
-                changerStatutDemande(idx, 'refusée');
+                const userId = this.getAttribute('data-userid');
+                const date = this.getAttribute('data-date');
+                changerStatutDemande(userId, date, 'refusée');
             });
         });
     }
 }
 
-function changerStatutDemande(idx, statut) {
+
+function changerStatutDemande(userId, date, statut) {
     const demandes = JSON.parse(localStorage.getItem("demandes") || "[]");
-    demandes[idx].statut = statut;
-    localStorage.setItem("demandes", JSON.stringify(demandes));
-    afficherDemandes();
+    const demande = demandes.find(d => String(d.userId) === String(userId) && d.date === date);
+    if (demande) {
+        demande.statut = statut;
+        localStorage.setItem("demandes", JSON.stringify(demandes));
+        afficherDemandes();
+    }
 }
 
 afficherDemandes();
+
+
+//Responsive
+// Menu hamburger responsive pour la navbar
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleBtn = document.querySelector('[data-collapse-toggle="navbar-default"]');
+    const navbar = document.getElementById('navbar-default');
+    if (toggleBtn && navbar) {
+        toggleBtn.addEventListener('click', function () {
+            navbar.classList.toggle('hidden');
+        });
+    }
+});
