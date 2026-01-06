@@ -1,104 +1,20 @@
-// Récupère l'utilisateur courant une seule fois
-const user = JSON.parse(sessionStorage.getItem("currentUser"));
-
 //Inscription
 function register(email, password, nom, prenom) {
-    // Validation de l'email
     if (!isValidEmail(email)) {
         return { success: false, message: "Format d'email invalide" };
     }
     if (!isLaPlateformeEmail(email)) {
         return { success: false, message: "Seuls les emails @laplateforme.io sont acceptés" };
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const form = document.querySelector("form");
-        if (form) {
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const inputs = form.querySelectorAll("input");
-                const nom = inputs[0].value;
-                const prenom = inputs[1].value;
-                const email = inputs[2].value;
-                const password = inputs[3].value;
-                const confirm = inputs[4] ? inputs[4].value : password;
-                if (password !== confirm) {
-                    alert("Les mots de passe ne correspondent pas.");
-                    return;
-                }
-                const result = register(email, password, nom, prenom);
-                if (result.success) {
-                    alert("Inscription réussie ! Vous pouvez vous connecter.");
-                    window.location.href = "connexion.html";
-                } else {
-                    alert(result.message);
-                }
-            });
-        }
-    });
-
-    // Création de l'utilisateur
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const newUser = {
         id: Date.now(),
         email, password, nom, prenom,
         role: "user"
     };
-
     users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
     return { success: true };
-}
-
-//Connexion
-function login(email, password) {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(u => u.email === email && u.password === password);
-
-    if (user) {
-        sessionStorage.setItem("currentUser", JSON.stringify(user));
-        return { success: true };
-    }
-    return { success: false, message: "Identifiants incorrects" };
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector("form");
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            const inputs = form.querySelectorAll("input");
-            const email = inputs[0].value;
-            const password = inputs[1].value;
-            const result = login(email, password);
-            if (result.success) {
-                alert("Connexion réussie !");
-                window.location.href = "calendrier.html";
-            } else {
-                alert(result.message);
-            }
-        });
-    }
-});
-
-// Vérifie la session uniquement pour calendrier.html
-if (
-    window.location.pathname.endsWith("/calendrier.html") &&
-    !user
-) {
-    window.location.href = "connexion.html";
-}
-
-//Charge le fichier .json
-async function loadUsers() {
-    try {
-        const response = await fetch("data/users.json");
-        const users = await response.json();
-        return users;
-    } catch (error) {
-        console.error("Erreur de chargement:", error);
-        return [];
-    }
 }
 
 //Valide les emails
@@ -113,8 +29,241 @@ function isLaPlateformeEmail(email) {
     return email.endsWith("@laplateforme.io");
 }
 
+// Gestion du formulaire d'inscription sur inscription.html
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.endsWith("/inscription.html")) {
+        const form = document.querySelector("form");
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const inputs = form.querySelectorAll("input");
+                const nom = inputs[0].value;
+                const email = inputs[1].value;
+                const password = inputs[2].value;
+                const confirm = inputs[3] ? inputs[3].value : password;
+                if (password !== confirm) {
+                    alert("Les mots de passe ne correspondent pas.");
+                    return;
+                }
+                const result = register(email, password, nom, "");
+                if (result.success) {
+                    alert("Inscription réussie ! Vous pouvez vous connecter.");
+                    window.location.href = "connexion.html";
+                } else {
+                    alert(result.message);
+                }
+            });
+        }
+    }
+});
 
-// --- Beau calendrier stylisé avec Tailwind ---
+// Connexion utilisateur (admin ou standard) via users.json
+function login(email, password) {
+    fetch('assets/data/users.json')
+        .then(response => response.json())
+        .then(users => {
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+                sessionStorage.setItem("currentUser", JSON.stringify(user));
+                if (user.role === 'admin') {
+                    alert('Bienvenue, administrateur !');
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('Bienvenue, utilisateur standard.');
+                    window.location.href = 'index.html';
+                }
+            } else {
+                alert('Identifiants incorrects.');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des utilisateurs:', error);
+        });
+}
+
+// Récupère l'utilisateur courant une seule fois
+const user = JSON.parse(sessionStorage.getItem("currentUser"));
+
+// Gestion du formulaire de création d'utilisateur sur admin.html
+document.addEventListener("DOMContentLoaded", function () {
+    const createUserForm = document.getElementById("create-user-form");
+    if (createUserForm) {
+        createUserForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const username = createUserForm.querySelector('#username').value.trim();
+            const email = createUserForm.querySelector('#email').value.trim();
+            const password = createUserForm.querySelector('#password').value;
+            const role = createUserForm.querySelector('#role').value;
+            const messageDiv = document.getElementById('create-user-message');
+            if (!username || !email || !password || !role) {
+                messageDiv.textContent = "Tous les champs sont obligatoires.";
+                messageDiv.className = "text-red-600 mt-2";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                messageDiv.textContent = "Format d'email invalide.";
+                messageDiv.className = "text-red-600 mt-2";
+                return;
+            }
+            let users = [];
+            try {
+                const response = await fetch('assets/data/users.json');
+                users = await response.json();
+            } catch (err) {
+                users = [];
+            }
+            if (users.some(u => u.email === email)) {
+                messageDiv.textContent = "Cet email existe déjà.";
+                messageDiv.className = "text-red-600 mt-2";
+                return;
+            }
+            const newUser = {
+                id: Date.now(),
+                username,
+                email,
+                password,
+                role
+            };
+            users.push(newUser);
+            localStorage.setItem("users", JSON.stringify(users));
+            messageDiv.textContent = "Utilisateur créé (stocké localement).";
+            messageDiv.className = "text-green-600 mt-2";
+            createUserForm.reset();
+        });
+    }
+});
+
+// Vérifie si l'utilisateur est modérateur uniquement sur backoffice.html
+if (window.location.pathname.endsWith("/backoffice.html")) {
+    if (!user || (user.role !== "moderateur" && user.role !== "admin")) {
+        window.location.href = "connexion.html";
+    }
+}
+
+// Gestion des droits par l'administrateur (admin.html)
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.endsWith("/admin.html")) {
+        // Vérifie que l'utilisateur est admin
+        const user = JSON.parse(sessionStorage.getItem('currentUser'));
+        if (!user || user.role !== "admin") {
+            window.location.href = "connexion.html";
+            return;
+        }
+
+        afficherUtilisateurs();
+
+        function afficherUtilisateurs() {
+            const users = JSON.parse(localStorage.getItem("users") || "[]");
+            const container = document.getElementById("users-list");
+            container.innerHTML = "";
+            users.forEach((u, idx) => {
+                let roleOptions = `
+                    <option value="user" ${u.role === "user" ? "selected" : ""}>Utilisateur</option>
+                    <option value="moderateur" ${u.role === "moderateur" ? "selected" : ""}>Modérateur</option>
+                    <option value="admin" ${u.role === "admin" ? "selected" : ""}>Administrateur</option>
+                `;
+                container.innerHTML += `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
+                        <div>
+                            <div class="font-bold text-cyan-700">${u.nom} ${u.prenom} <span class="text-gray-500 text-sm">(${u.email})</span></div>
+                            <div class="text-sm text-gray-500">Rôle actuel : <span class="font-semibold">${u.role}</span></div>
+                        </div>
+                        <div class="flex items-center gap-4 mt-2 md:mt-0">
+                            <select class="role-select border rounded px-2 py-1" data-idx="${idx}">
+                                ${roleOptions}
+                            </select>
+                            <button class="delete-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-idx="${idx}">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Listener pour changement de rôle
+            document.querySelectorAll('.role-select').forEach(sel => {
+                sel.addEventListener('change', function () {
+                    const idx = this.getAttribute('data-idx');
+                    const users = JSON.parse(localStorage.getItem("users") || "[]");
+                    users[idx].role = this.value;
+                    localStorage.setItem("users", JSON.stringify(users));
+                    afficherUtilisateurs();
+                });
+            });
+
+            // Listener pour suppression
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const idx = this.getAttribute('data-idx');
+                    let users = JSON.parse(localStorage.getItem("users") || "[]");
+                    if (users[idx].email === user.email) {
+                        alert("Vous ne pouvez pas vous supprimer vous-même !");
+                        return;
+                    }
+                    users.splice(idx, 1);
+                    localStorage.setItem("users", JSON.stringify(users));
+                    afficherUtilisateurs();
+                });
+            });
+        }
+    }
+});
+
+// Affiche/Masque les liens navbar selon l'état de connexion (unique)
+document.addEventListener("DOMContentLoaded", function () {
+    // Affiche le lien backoffice si modérateur ou admin
+    if (user && (user.role === 'moderateur' || user.role === 'admin')) {
+        const backofficeLi = document.getElementById('backoffice-li');
+        if (backofficeLi) backofficeLi.style.display = '';
+    }
+    // Affiche le lien admin uniquement pour l'admin
+    if (user && user.role === 'admin') {
+        const adminLi = document.getElementById('admin-li');
+        if (adminLi) adminLi.style.display = '';
+    }
+    // Masque inscription/connexion si connecté
+    if (user) {
+        const inscriptionLi = document.getElementById('inscription-li');
+        const connexionLi = document.getElementById('connexion-li');
+        if (inscriptionLi) inscriptionLi.style.display = 'none';
+        if (connexionLi) connexionLi.style.display = 'none';
+    }
+});
+
+//Bouton de déconnexion sur la navbar
+document.addEventListener('DOMContentLoaded', function () {
+    const logoutLi = document.getElementById('logout-li');
+    if (user && logoutLi) {
+        logoutLi.style.display = '';
+    }
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'connexion.html';
+        });
+    }
+});
+
+//Charge le fichier .json
+async function loadUsers() {
+    try {
+        const response = await fetch("data/users.json");
+        const users = await response.json();
+        return users;
+    } catch (error) {
+        console.error("Erreur de chargement:", error);
+        return [];
+    }
+}
+
+// Vérifie la session uniquement pour calendrier.html
+if (
+    window.location.pathname.endsWith("/calendrier.html") &&
+    !user
+) {
+    window.location.href = "connexion.html";
+}
+
+// Calendrier
 if (window.location.pathname.endsWith("/calendrier.html") && user) {
     document.addEventListener("DOMContentLoaded", function () {
         afficherCalendrierBeau();
@@ -219,28 +368,9 @@ function setDemandes(demandes) {
     localStorage.setItem("demandes", JSON.stringify(demandes));
 }
 
-//Bouton de déconnexion sur la navbar
-document.addEventListener('DOMContentLoaded', function () {
-    const user = sessionStorage.getItem('currentUser');
-    const logoutLi = document.getElementById('logout-li');
-    if (user && logoutLi) {
-        logoutLi.style.display = '';
-    }
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = 'connexion.html';
-        });
-    }
-});
 
-// Vérifie si l'utilisateur est modérateur uniquement sur backoffice.html
-if (window.location.pathname.endsWith("/backoffice.html")) {
-    if (!user || user.role !== "moderateur") {
-        window.location.href = "connexion.html";
-    }
-}
+
+
 
 // Affiche les demandes en attente
 function afficherDemandes() {
@@ -281,19 +411,22 @@ function afficherDemandes() {
             `;
     });
 
-    // Ajoute les listeners pour accepter/refuser
-    document.querySelectorAll('.accept-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const idx = this.getAttribute('data-idx');
-            changerStatutDemande(idx, 'acceptée');
+    // Ajoute les listeners pour accepter/refuser uniquement si modérateur ou admin
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+    if (currentUser && (currentUser.role === 'moderateur' || currentUser.role === 'admin')) {
+        document.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = this.getAttribute('data-idx');
+                changerStatutDemande(idx, 'acceptée');
+            });
         });
-    });
-    document.querySelectorAll('.refuse-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const idx = this.getAttribute('data-idx');
-            changerStatutDemande(idx, 'refusée');
+        document.querySelectorAll('.refuse-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = this.getAttribute('data-idx');
+                changerStatutDemande(idx, 'refusée');
+            });
         });
-    });
+    }
 }
 
 function changerStatutDemande(idx, statut) {
@@ -303,125 +436,4 @@ function changerStatutDemande(idx, statut) {
     afficherDemandes();
 }
 
-afficherDemandes(); // Sans effet sur les pages sans 'demandes-list'
-
-// Affiche/Masque les liens navbar selon l'état de connexion
-document.addEventListener("DOMContentLoaded", function () {
-    const user = JSON.parse(sessionStorage.getItem('currentUser'));
-    // Affiche le lien backoffice si modérateur
-    if (user && user.role === 'moderateur') {
-        const backofficeLi = document.getElementById('backoffice-li');
-        if (backofficeLi) backofficeLi.style.display = '';
-    }
-    // Masque inscription/connexion si connecté
-    if (user) {
-        const inscriptionLi = document.getElementById('inscription-li');
-        const connexionLi = document.getElementById('connexion-li');
-        if (inscriptionLi) inscriptionLi.style.display = 'none';
-        if (connexionLi) connexionLi.style.display = 'none';
-    }
-});
-
-// Gestion du formulaire d'inscription sur inscription.html
-document.addEventListener("DOMContentLoaded", function () {
-    if (window.location.pathname.endsWith("/inscription.html")) {
-        const form = document.querySelector("form");
-        if (form) {
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const inputs = form.querySelectorAll("input");
-                const nom = inputs[0].value;
-                const email = inputs[1].value;
-                const password = inputs[2].value;
-                const confirm = inputs[3] ? inputs[3].value : password;
-                if (password !== confirm) {
-                    alert("Les mots de passe ne correspondent pas.");
-                    return;
-                }
-                const result = register(email, password, nom, "");
-                if (result.success) {
-                    alert("Inscription réussie ! Vous pouvez vous connecter.");
-                    window.location.href = "connexion.html";
-                } else {
-                    alert(result.message);
-                }
-            });
-        }
-    }
-});
-
-// Affiche le lien backoffice si modérateur sur toutes les pages
-document.addEventListener("DOMContentLoaded", function () {
-    const user = JSON.parse(sessionStorage.getItem('currentUser'));
-    if (user && user.role === 'moderateur') {
-        const backofficeLi = document.getElementById('backoffice-li');
-        if (backofficeLi) backofficeLi.style.display = '';
-    }
-});
-
-// Gestion des droits par l'administrateur (admin.html)
-document.addEventListener("DOMContentLoaded", function () {
-    if (window.location.pathname.endsWith("/admin.html")) {
-        // Vérifie que l'utilisateur est admin
-        const user = JSON.parse(sessionStorage.getItem('currentUser'));
-        if (!user || user.role !== "admin") {
-            window.location.href = "connexion.html";
-            return;
-        }
-
-        afficherUtilisateurs();
-
-        function afficherUtilisateurs() {
-            const users = JSON.parse(localStorage.getItem("users") || "[]");
-            const container = document.getElementById("users-list");
-            container.innerHTML = "";
-            users.forEach((u, idx) => {
-                let roleOptions = `
-                    <option value="user" ${u.role === "user" ? "selected" : ""}>Utilisateur</option>
-                    <option value="moderateur" ${u.role === "moderateur" ? "selected" : ""}>Modérateur</option>
-                    <option value="admin" ${u.role === "admin" ? "selected" : ""}>Administrateur</option>
-                `;
-                container.innerHTML += `
-                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
-                        <div>
-                            <div class="font-bold text-cyan-700">${u.nom} ${u.prenom} <span class="text-gray-500 text-sm">(${u.email})</span></div>
-                            <div class="text-sm text-gray-500">Rôle actuel : <span class="font-semibold">${u.role}</span></div>
-                        </div>
-                        <div class="flex items-center gap-4 mt-2 md:mt-0">
-                            <select class="role-select border rounded px-2 py-1" data-idx="${idx}">
-                                ${roleOptions}
-                            </select>
-                            <button class="delete-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-idx="${idx}">Supprimer</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Listener pour changement de rôle
-            document.querySelectorAll('.role-select').forEach(sel => {
-                sel.addEventListener('change', function () {
-                    const idx = this.getAttribute('data-idx');
-                    const users = JSON.parse(localStorage.getItem("users") || "[]");
-                    users[idx].role = this.value;
-                    localStorage.setItem("users", JSON.stringify(users));
-                    afficherUtilisateurs();
-                });
-            });
-
-            // Listener pour suppression
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const idx = this.getAttribute('data-idx');
-                    let users = JSON.parse(localStorage.getItem("users") || "[]");
-                    if (users[idx].email === user.email) {
-                        alert("Vous ne pouvez pas vous supprimer vous-même !");
-                        return;
-                    }
-                    users.splice(idx, 1);
-                    localStorage.setItem("users", JSON.stringify(users));
-                    afficherUtilisateurs();
-                });
-            });
-        }
-    }
-});
+afficherDemandes();

@@ -3,6 +3,10 @@
 nav.bg-neutral-primary {
     box-shadow: 0 4px 18px 0 rgba(23, 69, 110, 0.18), 0 1.5px 8px 0 rgba(23, 69, 110, 0.08);
     z-index: 30;
+    background-color: #164e63 !important;
+    /* cyan-900 */
+    opacity: 1 !important;
+    margin-bottom: 10px;
 }
 
 /* Formulaires */

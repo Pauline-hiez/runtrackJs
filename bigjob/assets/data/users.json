@@ -38,5 +38,12 @@
     "age": 32,
     "ville": "Nice",
     "telephone": "06 99 88 77 66"
+  },
+  {
+    "id": 6,
+    "nom": "admin",
+    "email": "admin@laplateforme.io",
+    "password": "motdepasse",
+    "role": "admin"
   }
 ]
