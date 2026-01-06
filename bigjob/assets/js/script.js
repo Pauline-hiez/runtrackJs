@@ -57,6 +57,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// Gestion du formulaire de connexion sur connexion.html
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.endsWith("/connexion.html")) {
+        const form = document.querySelector("form");
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const email = form.querySelector("input[name='email']").value.trim();
+                const password = form.querySelector("input[name='password']").value;
+                login(email, password);
+            });
+        }
+    }
+});
+
 // Connexion utilisateur (admin ou standard) via users.json
 function login(email, password) {
     fetch('assets/data/users.json')
@@ -90,12 +105,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (createUserForm) {
         createUserForm.addEventListener("submit", async function (e) {
             e.preventDefault();
-            const username = createUserForm.querySelector('#username').value.trim();
+            const nom = createUserForm.querySelector('#username').value.trim();
+            const prenom = "";
             const email = createUserForm.querySelector('#email').value.trim();
             const password = createUserForm.querySelector('#password').value;
             const role = createUserForm.querySelector('#role').value;
             const messageDiv = document.getElementById('create-user-message');
-            if (!username || !email || !password || !role) {
+            if (!nom || !email || !password || !role) {
                 messageDiv.textContent = "Tous les champs sont obligatoires.";
                 messageDiv.className = "text-red-600 mt-2";
                 return;
@@ -105,13 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 messageDiv.className = "text-red-600 mt-2";
                 return;
             }
-            let users = [];
-            try {
-                const response = await fetch('assets/data/users.json');
-                users = await response.json();
-            } catch (err) {
-                users = [];
-            }
+            let users = JSON.parse(localStorage.getItem("users")) || [];
             if (users.some(u => u.email === email)) {
                 messageDiv.textContent = "Cet email existe déjà.";
                 messageDiv.className = "text-red-600 mt-2";
@@ -119,7 +129,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             const newUser = {
                 id: Date.now(),
-                username,
+                nom,
+                prenom,
                 email,
                 password,
                 role
@@ -162,10 +173,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     <option value="moderateur" ${u.role === "moderateur" ? "selected" : ""}>Modérateur</option>
                     <option value="admin" ${u.role === "admin" ? "selected" : ""}>Administrateur</option>
                 `;
+                const nomComplet = u.nom + (u.prenom ? ' ' + u.prenom : '');
                 container.innerHTML += `
                     <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
                         <div>
-                            <div class="font-bold text-cyan-700">${u.nom} ${u.prenom} <span class="text-gray-500 text-sm">(${u.email})</span></div>
+                            <div class="font-bold text-cyan-700">${nomComplet} <span class="text-gray-500 text-sm">(${u.email})</span></div>
                             <div class="text-sm text-gray-500">Rôle actuel : <span class="font-semibold">${u.role}</span></div>
                         </div>
                         <div class="flex items-center gap-4 mt-2 md:mt-0">
@@ -264,13 +276,7 @@ if (
 }
 
 // Calendrier
-if (window.location.pathname.endsWith("/calendrier.html") && user) {
-    document.addEventListener("DOMContentLoaded", function () {
-        afficherCalendrierBeau();
-    });
-}
-
-function afficherCalendrierBeau() {
+function afficherCalendrier() {
     const moisNoms = [
         'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -340,6 +346,13 @@ function afficherCalendrierBeau() {
     }
 }
 
+if (window.location.pathname.endsWith("/calendrier.html") && user) {
+    document.addEventListener("DOMContentLoaded", function () {
+        afficherCalendrier();
+    });
+}
+
+
 function demanderAutorisation(dateStr) {
     // Vérifie si la date est passée
     const maintenant = new Date();
@@ -357,7 +370,7 @@ function demanderAutorisation(dateStr) {
     demandes.push({ userId: user.id, date: dateStr, statut: "en_attente" });
     setDemandes(demandes);
     alert("Demande envoyée pour le " + dateStr);
-    afficherCalendrierBeau();
+    afficherCalendrier();
 }
 
 function getDemandes() {
@@ -383,9 +396,28 @@ function afficherDemandes() {
         container.innerHTML = '<div class="text-center text-gray-500">Aucune demande.</div>';
         return;
     }
+    // Trie les demandes : en attente d'abord, puis les autres
+    demandes.sort((a, b) => {
+        if (a.statut === 'en_attente' && b.statut !== 'en_attente') return -1;
+        if (a.statut !== 'en_attente' && b.statut === 'en_attente') return 1;
+        return 0;
+    });
     demandes.forEach((d, idx) => {
         const demandeur = users.find(u => u.id === d.userId);
-        const nom = demandeur ? (demandeur.nom + ' ' + demandeur.prenom) : 'Utilisateur inconnu';
+        let nom = 'Utilisateur inconnu';
+        if (demandeur) {
+            if (demandeur.nom && demandeur.prenom) {
+                nom = demandeur.nom + (demandeur.prenom ? ' ' + demandeur.prenom : '');
+            } else if (demandeur.nom) {
+                nom = demandeur.nom;
+            } else if (demandeur.email) {
+                nom = demandeur.email;
+            }
+        }
+        let statutAffiche =
+            d.statut === 'en_attente' ? 'En attente' :
+                d.statut === 'acceptée' ? 'Acceptée' :
+                    d.statut === 'refusée' ? 'Refusée' : d.statut;
         let statutColor = d.statut === 'acceptée' ? 'text-green-600' : d.statut === 'refusée' ? 'text-red-600' : 'text-yellow-600';
         let actions = '';
         // On ne peut plus changer la décision si la date est passée
@@ -404,7 +436,7 @@ function afficherDemandes() {
                         <div class="text-sm text-gray-500">${d.date}</div>
                     </div>
                     <div class="flex items-center gap-4 mt-2 md:mt-0">
-                        <span class="font-semibold ${statutColor}">${d.statut}</span>
+                        <span class="font-semibold ${statutColor}">${statutAffiche}</span>
                         ${actions}
                     </div>
                 </div>

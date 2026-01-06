@@ -2,7 +2,9 @@
   {
     "id": 1,
     "nom": "Alice Dupont",
-    "email": "alice@example.com",
+    "email": "alice@laplateforme.io",
+    "password": "alice123",
+    "role": "user",
     "age": 25,
     "ville": "Paris",
     "telephone": "06 12 34 56 78"
@@ -10,7 +12,9 @@
   {
     "id": 2,
     "nom": "Bob Martin",
-    "email": "bob@example.com",
+    "email": "bob@laplateforme.io",
+    "password": "bob123",
+    "role": "user",
     "age": 30,
     "ville": "Lyon",
     "telephone": "06 98 76 54 32"
@@ -18,7 +22,9 @@
   {
     "id": 3,
     "nom": "Charlie Durand",
-    "email": "charlie@example.com",
+    "email": "charlie@laplateforme.io",
+    "password": "charlie123",
+    "role": "user",
     "age": 28,
     "ville": "Marseille",
     "telephone": "06 11 22 33 44"
@@ -26,7 +32,9 @@
   {
     "id": 4,
     "nom": "Diana Lefebvre",
-    "email": "diana@example.com",
+    "email": "diana@laplateforme.io",
+    "password": "diana123",
+    "role": "user",
     "age": 26,
     "ville": "Toulouse",
     "telephone": "06 55 66 77 88"
@@ -34,7 +42,9 @@
   {
     "id": 5,
     "nom": "Ethan Rousseau",
-    "email": "ethan@example.com",
+    "email": "ethan@laplateforme.io",
+    "password": "ethan123",
+    "role": "user",
     "age": 32,
     "ville": "Nice",
     "telephone": "06 99 88 77 66"
