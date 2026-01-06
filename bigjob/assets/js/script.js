@@ -358,3 +358,70 @@ document.addEventListener("DOMContentLoaded", function () {
         if (backofficeLi) backofficeLi.style.display = '';
     }
 });
+
+// Gestion des droits par l'administrateur (admin.html)
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.pathname.endsWith("/admin.html")) {
+        // Vérifie que l'utilisateur est admin
+        const user = JSON.parse(sessionStorage.getItem('currentUser'));
+        if (!user || user.role !== "admin") {
+            window.location.href = "connexion.html";
+            return;
+        }
+
+        afficherUtilisateurs();
+
+        function afficherUtilisateurs() {
+            const users = JSON.parse(localStorage.getItem("users") || "[]");
+            const container = document.getElementById("users-list");
+            container.innerHTML = "";
+            users.forEach((u, idx) => {
+                let roleOptions = `
+                    <option value="user" ${u.role === "user" ? "selected" : ""}>Utilisateur</option>
+                    <option value="moderateur" ${u.role === "moderateur" ? "selected" : ""}>Modérateur</option>
+                    <option value="admin" ${u.role === "admin" ? "selected" : ""}>Administrateur</option>
+                `;
+                container.innerHTML += `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white/80 rounded-xl shadow p-4 border border-cyan-200">
+                        <div>
+                            <div class="font-bold text-cyan-700">${u.nom} ${u.prenom} <span class="text-gray-500 text-sm">(${u.email})</span></div>
+                            <div class="text-sm text-gray-500">Rôle actuel : <span class="font-semibold">${u.role}</span></div>
+                        </div>
+                        <div class="flex items-center gap-4 mt-2 md:mt-0">
+                            <select class="role-select border rounded px-2 py-1" data-idx="${idx}">
+                                ${roleOptions}
+                            </select>
+                            <button class="delete-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-idx="${idx}">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Listener pour changement de rôle
+            document.querySelectorAll('.role-select').forEach(sel => {
+                sel.addEventListener('change', function () {
+                    const idx = this.getAttribute('data-idx');
+                    const users = JSON.parse(localStorage.getItem("users") || "[]");
+                    users[idx].role = this.value;
+                    localStorage.setItem("users", JSON.stringify(users));
+                    afficherUtilisateurs();
+                });
+            });
+
+            // Listener pour suppression
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const idx = this.getAttribute('data-idx');
+                    let users = JSON.parse(localStorage.getItem("users") || "[]");
+                    if (users[idx].email === user.email) {
+                        alert("Vous ne pouvez pas vous supprimer vous-même !");
+                        return;
+                    }
+                    users.splice(idx, 1);
+                    localStorage.setItem("users", JSON.stringify(users));
+                    afficherUtilisateurs();
+                });
+            });
+        }
+    }
+});
