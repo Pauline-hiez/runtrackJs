@@ -305,12 +305,20 @@ function changerStatutDemande(idx, statut) {
 
 afficherDemandes(); // Sans effet sur les pages sans 'demandes-list'
 
-// Affiche le lien backoffice si modérateur sur toutes les pages
+// Affiche/Masque les liens navbar selon l'état de connexion
 document.addEventListener("DOMContentLoaded", function () {
     const user = JSON.parse(sessionStorage.getItem('currentUser'));
+    // Affiche le lien backoffice si modérateur
     if (user && user.role === 'moderateur') {
         const backofficeLi = document.getElementById('backoffice-li');
         if (backofficeLi) backofficeLi.style.display = '';
+    }
+    // Masque inscription/connexion si connecté
+    if (user) {
+        const inscriptionLi = document.getElementById('inscription-li');
+        const connexionLi = document.getElementById('connexion-li');
+        if (inscriptionLi) inscriptionLi.style.display = 'none';
+        if (connexionLi) connexionLi.style.display = 'none';
     }
 });
 
