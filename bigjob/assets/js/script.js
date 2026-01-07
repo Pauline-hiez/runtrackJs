@@ -24,12 +24,11 @@ function isValidEmail(email) {
 }
 
 //Vérifie que les adresses soient bien laplateforme.io
-
 function isLaPlateformeEmail(email) {
     return email.endsWith("@laplateforme.io");
 }
 
-// Gestion du formulaire d'inscription sur inscription.html
+// Gestion du formulaire d'inscription
 document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname.endsWith("/inscription.html")) {
         const form = document.querySelector("form");
@@ -57,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// Gestion du formulaire de connexion sur connexion.html
+// Gestion du formulaire de connexion 
 document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname.endsWith("/connexion.html")) {
         const form = document.querySelector("form");
@@ -72,34 +71,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// Connexion utilisateur (admin ou standard) via users.json
+// Connexion utilisateur 
 function login(email, password) {
-    fetch('assets/data/users.json')
-        .then(response => response.json())
-        .then(users => {
-            const user = users.find(u => u.email === email && u.password === password);
-            if (user) {
-                sessionStorage.setItem("currentUser", JSON.stringify(user));
-                if (user.role === 'admin') {
-                    alert('Bienvenue, administrateur !');
-                    window.location.href = 'admin.html';
-                } else {
-                    alert('Bienvenue, utilisateur standard.');
-                    window.location.href = 'index.html';
-                }
-            } else {
-                alert('Identifiants incorrects.');
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors du chargement des utilisateurs:', error);
-        });
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+        sessionStorage.setItem("currentUser", JSON.stringify(user));
+        if (user.role === 'admin') {
+            alert('Bienvenue, administrateur !');
+            window.location.href = 'admin.html';
+        } else {
+            alert('Bienvenue.');
+            window.location.href = 'calendrier.html';
+        }
+    } else {
+        alert('Identifiants incorrects.');
+    }
 }
 
-// Récupère l'utilisateur courant une seule fois
+// Récupère l'utilisateur une seule fois
 const user = JSON.parse(sessionStorage.getItem("currentUser"));
 
-// Gestion du formulaire de création d'utilisateur sur admin.html
+// Gestion du formulaire de création d'utilisateur sur la page admin
 document.addEventListener("DOMContentLoaded", function () {
     const createUserForm = document.getElementById("create-user-form");
     if (createUserForm) {
@@ -137,21 +130,21 @@ document.addEventListener("DOMContentLoaded", function () {
             };
             users.push(newUser);
             localStorage.setItem("users", JSON.stringify(users));
-            messageDiv.textContent = "Utilisateur créé (stocké localement).";
+            messageDiv.textContent = "Utilisateur créé.";
             messageDiv.className = "text-green-600 mt-2";
             createUserForm.reset();
         });
     }
 });
 
-// Vérifie si l'utilisateur est modérateur uniquement sur backoffice.html
+// Vérifie si l'utilisateur est modérateur pour la page backoffice
 if (window.location.pathname.endsWith("/backoffice.html")) {
     if (!user || (user.role !== "moderateur" && user.role !== "admin")) {
         window.location.href = "connexion.html";
     }
 }
 
-// Gestion des droits par l'administrateur (admin.html)
+// Gestion des droits par l'admin
 document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname.endsWith("/admin.html")) {
         // Vérifie que l'utilisateur est admin
@@ -201,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             });
 
-            // Listener pour suppression
+            // Listener pour supprimer un utilisateur
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const idx = this.getAttribute('data-idx');
@@ -219,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// Affiche/Masque les liens navbar selon l'état de connexion (unique)
+// Affiche/Masque les liens navbar selon l'état de connexion 
 document.addEventListener("DOMContentLoaded", function () {
     // Affiche le lien backoffice si modérateur ou admin
     if (user && (user.role === 'moderateur' || user.role === 'admin')) {
@@ -231,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const adminLi = document.getElementById('admin-li');
         if (adminLi) adminLi.style.display = '';
     }
-    // Masque inscription/connexion si connecté
+    // Masque inscription/connexion si utilisateur connecté
     if (user) {
         const inscriptionLi = document.getElementById('inscription-li');
         const connexionLi = document.getElementById('connexion-li');
@@ -267,7 +260,7 @@ async function loadUsers() {
     }
 }
 
-// Vérifie la session uniquement pour calendrier.html
+// Vérifie la session pour le calendrier
 if (
     window.location.pathname.endsWith("/calendrier.html") &&
     !user
@@ -381,10 +374,6 @@ function setDemandes(demandes) {
     localStorage.setItem("demandes", JSON.stringify(demandes));
 }
 
-
-
-
-
 // Affiche les demandes en attente
 function afficherDemandes() {
     const container = document.getElementById("demandes-list");
@@ -396,7 +385,7 @@ function afficherDemandes() {
         container.innerHTML = '<div class="text-center text-gray-500">Aucune demande.</div>';
         return;
     }
-    // Trie les demandes : en attente d'abord, puis les autres
+    // Tri les demandes : en attente d'abord, puis les autres
     demandes.sort((a, b) => {
         if (a.statut === 'en_attente' && b.statut !== 'en_attente') return -1;
         if (a.statut !== 'en_attente' && b.statut === 'en_attente') return 1;
