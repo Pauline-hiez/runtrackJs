@@ -63,7 +63,7 @@ nav.bg-neutral-primary {
 }
 
 .bg-animate {
-    background: linear-gradient(-45deg, #9ac0d0, #9bd3e4, #70bfdc, #aed5e8);
+    background: linear-gradient(-45deg, #b7d9e8, #37727f, #1a6986, #33b7d4);
     background-size: 400% 400%;
     animation: bg-shift 15s ease infinite;
 }
